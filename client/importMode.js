@@ -52,7 +52,19 @@
       };
     }).filter(Boolean);
 
+    // Support both the original internal "final" format and Astra's
+    // "recommended_highlight.sections" format.
     var finalItems = Array.isArray(data.final) ? data.final : [];
+    if (!finalItems.length && data.recommended_highlight && Array.isArray(data.recommended_highlight.sections)) {
+      finalItems = data.recommended_highlight.sections.map(function (item) {
+        return {
+          start: item.start,
+          end: item.end,
+          role: item.role || "Highlight"
+        };
+      });
+    }
+
     var recommendationIds = [];
     var recommendationSegments = [];
     var nextSynthetic = 1;
@@ -63,14 +75,18 @@
       if (!isFinite(start) || !isFinite(end) || end <= start) return;
 
       var matched = findMatchingCandidate(candidates, { start: start, end: end });
-      if (!matched) {
+
+      // Astra's final section can be a sub-range of a candidate (for example,
+      // a hook/context slice inside a larger candidate). In that case create a
+      // synthetic final segment so the exact recommended timestamps are preserved.
+      if (!matched || Math.abs(matched.start - start) > 0.25 || Math.abs(matched.end - end) > 0.25) {
         matched = {
           id: "FINAL-" + (nextSynthetic++),
           start: start,
           end: end,
           score: 100,
           label: safeText(item.role || "AI Recommendation"),
-          reason: "Imported from the AI final recommendation.",
+          reason: "Exact segment imported from the AI final recommendation.",
           text: safeText(item.text || ""),
           type: "Final recommendation"
         };
@@ -92,6 +108,9 @@
     }, 0);
 
     var rationale = safeText(data.rationale || "");
+    if (!rationale && data.recommended_highlight && Array.isArray(data.recommended_highlight.story_shape)) {
+      rationale = data.recommended_highlight.story_shape.join(" → ");
+    }
     var flags = Array.isArray(data.review_flags) ? data.review_flags.map(safeText) : [];
 
     return {
