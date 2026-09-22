@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.smf.speechhighlight"
+    ExtensionBundleVersion="1.2.0" ExtensionBundleName="SMF Speech Highlight Engine"
+    xmlns:ExtensionBundle="http://ns.adobe.com/extension">
+  <ExtensionList>
+    <Extension Id="com.smf.speechhighlight.panel" Version="1.2.0" />
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="PPRO" Version="[13.0,99.9]" />
+    </HostList>
+    <LocaleList>
+      <Locale Code="All" />
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="7.0" />
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <Extension Id="com.smf.speechhighlight.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./client/index.html</MainPath>
+          <ScriptPath>./jsx/hostscript.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>SMF Speech Highlight Engine</Menu>
+          <Geometry>
+            <Size>
+              <Height>560</Height>
+              <Width>420</Width>
+            </Size>
+            <MinSize>
+              <Height>400</Height>
+              <Width>360</Width>
+            </MinSize>
+          </Geometry>
+          <Icons></Icons>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>
