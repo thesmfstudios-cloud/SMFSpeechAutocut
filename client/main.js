@@ -7,6 +7,14 @@ const statusEl = document.getElementById("status");
 const clipInfoEl = document.getElementById("clipInfo");
 const analyzeBtn = document.getElementById("analyzeBtn");
 const refreshBtn = document.getElementById("refreshBtn");
+const importBtn = document.getElementById("importBtn");
+const analysisFileEl = document.getElementById("analysisFile");
+const packageSectionEl = document.getElementById("packageSection");
+const packageNameEl = document.getElementById("packageName");
+const packageNoteEl = document.getElementById("packageNote");
+const recommendationRangesEl = document.getElementById("recommendationRanges");
+const flagsSectionEl = document.getElementById("flagsSection");
+const flagsListEl = document.getElementById("flagsList");
 const targetDurationEl = document.getElementById("targetDuration");
 const candidateListEl = document.getElementById("candidateList");
 const candidateCountEl = document.getElementById("candidateCount");
@@ -83,6 +91,42 @@ function getSelectedCandidates() {
   });
 }
 
+function renderFlags(flags) {
+  if (!flags || !flags.length) {
+    flagsSectionEl.style.display = "none";
+    return;
+  }
+  flagsListEl.innerHTML = "";
+  flags.forEach((flag) => {
+    const row = document.createElement("div");
+    row.className = "flag";
+    row.textContent = flag;
+    flagsListEl.appendChild(row);
+  });
+  flagsSectionEl.style.display = "block";
+}
+
+function importAnalysisData(data, filename) {
+  const imported = SMFAnalysisImport.normalize(data, filename);
+  currentCandidates = imported.candidates;
+  currentRecommendation = imported.recommendation;
+  currentRecommendation.segments = imported.recommendationSegments || [];
+
+  packageSectionEl.style.display = "block";
+  packageNameEl.textContent = imported.sourceFilename;
+  packageNoteEl.textContent = imported.accuracyNote || "Imported AI analysis package.";
+
+  renderCandidates();
+  renderRecommendation();
+  renderFlags(imported.reviewFlags);
+
+  if (currentRecommendation.candidateIds.length) {
+    setStatus("Imported " + currentCandidates.length + " candidate cuts. AI recommendation: " + formatTime(currentRecommendation.totalDuration) + ".");
+  } else {
+    setStatus("Imported " + currentCandidates.length + " candidate cuts. No final recommendation found.");
+  }
+}
+
 function renderCandidates() {
   candidateListEl.innerHTML = "";
   candidateCountEl.textContent = `${currentCandidates.length} found`;
@@ -93,16 +137,16 @@ function renderCandidates() {
     return;
   }
 
-  const recIds = new Set((currentRecommendation.candidateIds || []).map(Number));
+  const recIds = new Set((currentRecommendation.candidateIds || []).map(String));
 
   currentCandidates.forEach((h, i) => {
     const div = document.createElement("div");
-    div.className = `candidate${recIds.has(Number(h.id)) ? " recommended" : ""}`;
+    div.className = `candidate${recIds.has(String(h.id)) ? " recommended" : ""}`;
     div.innerHTML = `
       <div class="candidate-head">
         <input type="checkbox" id="candidate-${i}" />
         <label for="candidate-${i}">
-          <span class="time">#${i + 1} · ${formatTime(h.start)} → ${formatTime(h.end)}</span>
+          <span class="time">#${escapeHtml(h.id)} · ${formatTime(h.start)} → ${formatTime(h.end)}</span>
           <span class="label"> ${escapeHtml(h.label || "Highlight")}</span>
         </label>
         <span class="score">${Math.round(h.score || 0)}/100</span>
@@ -136,6 +180,11 @@ function renderRecommendation() {
   recommendationSectionEl.style.display = "block";
   recommendationDurationEl.textContent = formatTime(rec.totalDuration);
   recommendationStoryEl.textContent = rec.story || "AI selected a coherent combination of strong moments.";
+  if (recommendationRangesEl) {
+    recommendationRangesEl.textContent = (rec.segments || [])
+      .map((s) => formatTime(s.start) + " → " + formatTime(s.end) + (s.role ? " [" + s.role + "]" : ""))
+      .join("  •  ");
+  }
   recommendationReasonEl.textContent = rec.reason || "Chosen for context, impact and narrative flow.";
 }
 
@@ -161,9 +210,28 @@ function setFinalHighlights(list, sourceLabel) {
 }
 
 function findByIds(ids) {
-  const byId = new Map(currentCandidates.map((c) => [Number(c.id), c]));
-  return (ids || []).map(Number).map((id) => byId.get(id)).filter(Boolean);
+  const byId = new Map(currentCandidates.map((c) => [String(c.id), c]));
+  return (ids || []).map(String).map((id) => byId.get(id)).filter(Boolean);
 }
+
+importBtn.addEventListener("click", () => analysisFileEl.click());
+
+analysisFileEl.addEventListener("change", () => {
+  const file = analysisFileEl.files && analysisFileEl.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(String(reader.result || ""));
+      importAnalysisData(data, file.name);
+    } catch (err) {
+      setStatus("Import error: " + escapeHtml(err.message));
+    }
+  };
+  reader.onerror = () => setStatus("Could not read the analysis JSON file.");
+  reader.readAsText(file, "utf-8");
+});
 
 refreshBtn.addEventListener("click", refreshSelectedClip);
 
@@ -211,7 +279,7 @@ useRecommendationBtn.addEventListener("click", () => {
   setFinalHighlights(selected, "AI recommendation");
   currentCandidates.forEach((_, i) => {
     const el = document.getElementById(`candidate-${i}`);
-    if (el) el.checked = currentRecommendation.candidateIds.map(Number).includes(Number(currentCandidates[i].id));
+    if (el) el.checked = currentRecommendation.candidateIds.map(String).includes(String(currentCandidates[i].id));
   });
   setStatus(`AI recommendation loaded: ${formatTime(currentRecommendation.totalDuration)}.`);
 });
