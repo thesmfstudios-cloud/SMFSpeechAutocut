@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ExtensionManifest Version="7.0" ExtensionBundleId="com.smf.speechhighlight"
-    ExtensionBundleVersion="1.4.1" ExtensionBundleName="SMF Speech Highlight Engine"
+    ExtensionBundleVersion="1.5.0" ExtensionBundleName="SMF Speech Highlight Engine"
     xmlns:ExtensionBundle="http://ns.adobe.com/extension">
   <ExtensionList>
-    <Extension Id="com.smf.speechhighlight.panel" Version="1.4.1" />
+    <Extension Id="com.smf.speechhighlight.panel" Version="1.5.0" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
@@ -20,7 +20,7 @@
     <Extension Id="com.smf.speechhighlight.panel">
       <DispatchInfo>
         <Resources>
-          <MainPath>./client/index.html</MainPath>
+          <MainPath>./client/index_v15.html</MainPath>
           <ScriptPath>./jsx/hostscript.jsx</ScriptPath>
           <CEFCommandLine>
             <Parameter>--enable-nodejs</Parameter>
