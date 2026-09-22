@@ -8,7 +8,6 @@ const statusEl = document.getElementById("status");
 const clipInfoEl = document.getElementById("clipInfo");
 const analyzeBtn = document.getElementById("analyzeBtn");
 const refreshBtn = document.getElementById("refreshBtn");
-const reloadBtn = document.getElementById("reloadBtn");
 const importBtn = document.getElementById("importBtn");
 const analysisFileEl = document.getElementById("analysisFile");
 const packageSectionEl = document.getElementById("packageSection");
@@ -277,10 +276,6 @@ analysisFileEl.addEventListener("change", () => {
   };
   reader.onerror = () => setStatus("Could not read the analysis JSON file.");
   reader.readAsText(file, "utf-8");
-});
-
-reloadBtn.addEventListener("click", function () {
-  window.location.reload(true);
 });
 
 refreshBtn.addEventListener("click", refreshSelectedClip);
