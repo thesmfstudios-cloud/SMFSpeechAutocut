@@ -108,20 +108,64 @@ function renderFlags(flags) {
 
 function importAnalysisData(data, filename) {
   const imported = SMFAnalysisImport.normalize(data, filename);
-  currentCandidates = imported.candidates;
-  currentRecommendation = imported.recommendation;
+  currentCandidates = imported.candidates || [];
+  currentRecommendation = imported.recommendation || { candidateIds: [], totalDuration: 0, story: "", reason: "" };
   currentRecommendation.segments = imported.recommendationSegments || [];
+
+  // Direct fallback for Astra's current format. This deliberately bypasses
+  // the normalizer so the UI can still show a recommendation if a stale
+  // cached helper file is loaded by Premiere.
+  if ((!currentRecommendation.candidateIds || !currentRecommendation.candidateIds.length) &&
+      data && data.recommended_highlight &&
+      Array.isArray(data.recommended_highlight.sections)) {
+    const directSegments = data.recommended_highlight.sections
+      .map((s, idx) => ({
+        id: "DIRECT-" + (idx + 1),
+        start: Number(s.start),
+        end: Number(s.end),
+        role: String(s.role || "Highlight"),
+        text: String(s.text || "")
+      }))
+      .filter((s) => isFinite(s.start) && isFinite(s.end) && s.end > s.start);
+
+    if (directSegments.length) {
+      directSegments.forEach((s) => {
+        currentCandidates.push({
+          id: s.id,
+          start: s.start,
+          end: s.end,
+          score: 100,
+          label: s.role,
+          reason: "Exact segment imported directly from recommended_highlight.sections.",
+          text: s.text,
+          type: "AI recommendation"
+        });
+      });
+      currentRecommendation = {
+        candidateIds: directSegments.map((s) => s.id),
+        totalDuration: directSegments.reduce((sum, s) => sum + (s.end - s.start), 0),
+        story: Array.isArray(data.recommended_highlight.story_shape)
+          ? data.recommended_highlight.story_shape.join(" → ")
+          : "AI-selected highlight sequence.",
+        reason: "Recommendation loaded directly from Astra's recommended_highlight.sections.",
+        segments: directSegments
+      };
+    }
+  }
 
   packageSectionEl.style.display = "block";
   packageNameEl.textContent = imported.sourceFilename;
-  packageNoteEl.textContent = imported.accuracyNote || "Imported AI analysis package.";
+  packageNoteEl.textContent =
+    (imported.accuracyNote || "Imported AI analysis package.") +
+    " · Recommendation sections detected: " +
+    String((currentRecommendation.segments || []).length);
 
   renderCandidates();
   renderRecommendation();
   renderFlags(imported.reviewFlags);
 
   if (currentRecommendation.candidateIds.length) {
-    setStatus("Imported " + currentCandidates.length + " candidate cuts. AI recommendation: " + formatTime(currentRecommendation.totalDuration) + ".");
+    setStatus("Imported " + currentCandidates.length + " candidate cuts. AI recommendation: " + formatTime(currentRecommendation.totalDuration) + " · sections: " + currentRecommendation.candidateIds.length + ".");
   } else {
     setStatus("Imported " + currentCandidates.length + " candidate cuts. No final recommendation found.");
   }
