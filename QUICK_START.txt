@@ -1,29 +1,62 @@
-SMF SPEECH HIGHLIGHT ENGINE v1.2 - SINGLE SPEAKER TEST
+SMF SPEECH HIGHLIGHT ENGINE v1.3
+SINGLE SPEAKER - OFFLINE IMPORT TEST
 
-TEST SCOPE:
-One person's 20–30 minute event speech -> candidate cuts -> AI recommended 1–2 minute highlight.
+GOAL:
+Use Astra's edit_decisions.json to review all candidate highlight cuts and create the
+AI-recommended or manually selected 1–2 minute highlight sequence in Premiere Pro 23.1.
 
-1) Install FFmpeg and make sure `ffmpeg -version` works.
-2) Install Node.js 18+.
-3) Open server/.env from .env.example and set:
-   OPENAI_API_KEY=sk-...
-4) In server folder run:
-   npm install
-   npm start
-5) Enable CEP debug mode in Windows Registry:
+NO API / NO LOCAL GPU MODEL REQUIRED FOR THIS TEST.
+
+1) Keep the extension folder at:
+   C:\Users\<YOUR_USER>\AppData\Roaming\Adobe\CEP\extensions\SMFSpeechAutocut
+
+2) Enable CEP debug mode in:
    HKEY_CURRENT_USER\Software\Adobe\CSXS.9
    PlayerDebugMode = 1
-6) Copy this repo folder to:
-   C:\Users\<YOUR_USER>\AppData\Roaming\Adobe\CEP\extensions\
-7) Restart Premiere Pro 23.1.
-8) Window > Extensions > SMF Speech Highlight Engine
-9) Select ONE speaker's video clip in the timeline.
-10) Choose 60 / 90 / 120 sec target.
-11) Analyze Speech.
-12) Review all AI candidate cuts and Preview any candidate.
-13) Use AI Recommendation or manually check cuts.
-14) Add Markers, or Build Premiere Sequence.
 
-GPU NOTE:
-No local Whisper or Ollama is used. Local machine only extracts audio with FFmpeg;
-transcription and AI highlight analysis use the configured OpenAI API.
+3) Start Premiere Pro 23.1.
+
+4) Window > Extensions > SMF Speech Highlight Engine
+
+5) In Premiere, import the ORIGINAL VIDEO that corresponds to the analyzed speech.
+
+6) Select that source video clip in the Project panel or timeline.
+
+7) In SMF AutoCut, click:
+   Import Analysis JSON
+
+8) Select:
+   edit_decisions.json
+
+9) The panel should now show:
+   - all candidate cuts
+   - exact start/end timestamps
+   - scores
+   - reasons
+   - spoken text
+   - AI recommended highlight
+   - review flags, when supplied
+
+10) Click Preview on a candidate to jump Premiere to the corresponding source time.
+
+11) Click Use AI Recommendation to load the final recommended cut list.
+    OR
+    tick candidates manually and click Use Selected.
+
+12) Click Add Markers first. Verify the marker positions against the source footage.
+
+13) Then click Build Premiere Sequence.
+    This creates a new sequence and inserts the selected source ranges in order.
+
+IMPORTANT:
+- The current first test assumes analysis timestamps are relative to the start of the
+  original source video.
+- The analysis package is AI-generated. Listen to every selected cut before publishing.
+- Do not use flagged names/uncertain phrases without checking the recording.
+- The SRT file is useful for transcript/caption verification; the JSON drives the cuts.
+- Ignore Cloud Analyze for this test. It requires server/.env and an API key.
+
+OPTIONAL FUTURE SERVER:
+   cd server
+   npm install
+   npm start
