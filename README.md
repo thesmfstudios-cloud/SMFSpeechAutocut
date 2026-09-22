@@ -1,24 +1,46 @@
-# SMF Speech Highlight Engine v1.2 — Single Speaker Test
+# SMF Speech Highlight Engine v1.3
 
-A practical AI editor assistant for long event speeches.
+Single-speaker AI highlight assistant for Premiere Pro 23.x.
 
-## What this version does
+## Current V1.3 workflow
 
-This build is intentionally scoped to **one speaker speech at a time**. Start with one 20–30 minute speech and generate a 1–2 minute highlight before adding multi-speaker event logic.
+This version supports an **offline import workflow** so the first real test does not need an API key or a local GPU model.
 
-1. Select a source video clip in Premiere Pro.
-2. The extension uses local FFmpeg only to extract audio.
-3. Cloud speech-to-text creates timestamped transcript segments.
-4. Cloud AI finds all strong candidate moments.
-5. The panel shows every candidate cut with score, label, reason and exact time.
-6. AI recommends a coherent 45–150 second combination for the target duration.
-7. You can accept the AI recommendation or manually choose the cuts.
-8. The extension can add markers and attempt to build a new highlight sequence.
+```
+20–30 min speech
+    ↓
+Astra / external AI analysis
+    ↓
+edit_decisions.json + SRT
+    ↓
+SMF AutoCut: Import Analysis JSON
+    ↓
+Show all candidate cuts
+    ↓
+Preview candidates
+    ↓
+Show AI recommended 60–120 sec combination
+    ↓
+Use Recommendation / manual selection
+    ↓
+Premiere markers
+    ↓
+Build Premiere highlight sequence
+```
 
-## Key design choice
+The importer understands the Astra-generated `edit_decisions.json` format used by the current speech-analysis package, including:
+- candidate IDs such as H01, H02...
+- scores expressed either out of 10 or out of 100
+- candidate start/end times in seconds
+- the `final` array containing the AI-recommended ranges
+- `accuracy_note` and `review_flags`
 
-No local Whisper or Ollama model is required. This avoids heavy CPU/GPU usage on the editing PC. Premiere, CEP, FFmpeg and the small Node server remain local; transcription and editorial reasoning happen through the configured cloud API.
+## API mode
 
-## Run
+The optional local server is still present for future cloud analysis. It is not required for the offline import test.
 
-See `QUICK_START.txt` for setup and Premiere Pro 23.1 test steps.
+## Premiere test assumptions
+
+The selected Premiere source clip must correspond to the beginning of the analyzed recording. The imported timestamps are source-media timestamps, not timeline timestamps.
+
+See `QUICK_START.txt` for the test procedure.
