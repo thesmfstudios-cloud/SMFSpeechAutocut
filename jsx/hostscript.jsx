@@ -63,19 +63,6 @@ function getSelectedClipPath() {
             } catch (e2) {}
         }
 
-        if (!clipItem && activeSeq && activeSeq.videoTracks) {
-            for (var t = 0; t < activeSeq.videoTracks.numTracks; t++) {
-                var track = activeSeq.videoTracks[t];
-                for (var c = 0; c < track.clips.numItems; c++) {
-                    if (track.clips[c] && track.clips[c].projectItem) {
-                        clipItem = track.clips[c].projectItem;
-                        break;
-                    }
-                }
-                if (clipItem) break;
-            }
-        }
-
         if (!clipItem) {
             return JSON.stringify({ ok: false, error: "Select a video clip in the timeline or Project panel." });
         }
