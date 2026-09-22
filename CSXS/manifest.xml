@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ExtensionManifest Version="7.0" ExtensionBundleId="com.smf.speechhighlight"
-    ExtensionBundleVersion="1.2.0" ExtensionBundleName="SMF Speech Highlight Engine"
+    ExtensionBundleVersion="1.3.0" ExtensionBundleName="SMF Speech Highlight Engine"
     xmlns:ExtensionBundle="http://ns.adobe.com/extension">
   <ExtensionList>
-    <Extension Id="com.smf.speechhighlight.panel" Version="1.2.0" />
+    <Extension Id="com.smf.speechhighlight.panel" Version="1.3.0" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>
