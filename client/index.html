@@ -61,14 +61,19 @@
     .actions { display:flex; gap:7px; flex-wrap:wrap; }
     #candidateList { max-height: 340px; overflow-y: auto; }
     .empty { color:#777; padding:8px 0; }
+    .flags { color:#d2b477; line-height:1.35; }
+    .flag { padding:4px 0; border-bottom:1px solid #302c25; }
   </style>
 </head>
 <body>
   <h1>SMF Speech Highlight Engine</h1>
-  <div class="sub">Single-speaker test → AI candidates → recommended 1–2 min highlight</div>
+  <div class="sub">Single-speaker workflow → AI candidates → recommended 1–2 min highlight</div>
+  <div style="display:inline-block;padding:3px 6px;border:1px solid #3d5f91;color:#a9c9ff;border-radius:4px;font-size:10px;margin-bottom:8px;">OFFLINE IMPORT MODE · NO API REQUIRED</div>
 
-  <div class="clip-info" id="clipInfo">Select one speaker's speech clip in Premiere.</div>
+  <div class="clip-info" id="clipInfo">Select the original speaker video clip in Premiere.</div>
   <div class="toolbar">
+    <button id="importBtn">Import Analysis JSON</button>
+    <input id="analysisFile" type="file" accept=".json,application/json" style="display:none;" />
     <button id="refreshBtn" class="secondary">Refresh Selection</button>
     <label class="muted">Target</label>
     <select id="targetDuration">
@@ -80,7 +85,12 @@
     <button id="analyzeBtn">Analyze Speech</button>
   </div>
 
-  <div id="status">Ready.</div>
+  <div id="status">Import the Astra-generated <b>edit_decisions.json</b> to start.</div>
+
+  <div class="section" id="packageSection" style="display:none;">
+    <div class="section-title"><strong>Imported Analysis</strong><span class="muted" id="packageName"></span></div>
+    <div class="muted" id="packageNote"></div>
+  </div>
 
   <div class="section" id="recommendationSection" style="display:none;">
     <div class="section-title">
@@ -89,6 +99,7 @@
     </div>
     <div class="rec-box">
       <div id="recommendationStory" class="rec-story"></div>
+      <div id="recommendationRanges" style="color:#bde1c8;margin-top:7px;font-variant-numeric:tabular-nums;"></div>
       <div id="recommendationReason" class="rec-reason"></div>
       <div class="actions" style="margin-top:8px;">
         <button id="useRecommendationBtn">Use AI Recommendation</button>
@@ -98,10 +109,10 @@
 
   <div class="section">
     <div class="section-title">
-      <strong>AI Candidate Cuts (Single Speaker)</strong>
+      <strong>AI Candidate Cuts</strong>
       <span class="muted" id="candidateCount">0</span>
     </div>
-    <div id="candidateList"><div class="empty">Run Analyze to find candidate highlights.</div></div>
+    <div id="candidateList"><div class="empty">Import an AI analysis JSON to load candidate cuts.</div></div>
     <div class="actions" id="selectionActions" style="display:none; margin-top:8px;">
       <button id="selectAllBtn" class="secondary">Select All</button>
       <button id="clearSelectionBtn" class="secondary">Clear</button>
@@ -122,7 +133,13 @@
     </div>
   </div>
 
+  <div class="section" id="flagsSection" style="display:none;">
+    <div class="section-title"><strong>Review Flags</strong></div>
+    <div id="flagsList" class="flags"></div>
+  </div>
+
   <script src="./CSInterface.js"></script>
+  <script src="./importMode.js"></script>
   <script src="./main.js"></script>
 </body>
 </html>
