@@ -44,7 +44,7 @@
         id: c.id != null ? String(c.id) : String(index + 1),
         start: start,
         end: end,
-        score: Math.max(0, Math.min(100, num(c.score, 0) * 10 <= 10 ? num(c.score, 0) * 10 : num(c.score, 0))),
+        score: Math.max(0, Math.min(100, (function (raw) { return raw <= 10 ? raw * 10 : raw; })(num(c.score, 0))),
         label: safeText(c.title || c.label || c.type || "Highlight"),
         reason: safeText(c.reason || ""),
         text: safeText(c.text || ""),
